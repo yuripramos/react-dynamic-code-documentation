@@ -1,16 +1,16 @@
-import * as esbuild from 'esbuild-wasm'
-import { useState, useEffect, useRef } from 'react'
-import { unpkgPathPlugin } from './plugins/unpkg-path-plugins'
-
+import * as esbuild from "esbuild-wasm";
+import { useState, useEffect, useRef } from "react";
+import { unpkgPathPlugin } from "./plugins/unpkg-path-plugins";
+import { fetchPlugin } from "./plugins/fetch-plugin";
 
 const useInitialService = () => {
-  const ref = useRef<any>()
-  const [input, setInput] = useState<string>('')
-  const [code, setCode] = useState<string>('')
+  const ref = useRef<any>();
+  const [input, setInput] = useState<string>("");
+  const [code, setCode] = useState<string>("");
 
   useEffect(() => {
-    startService()
-  },[])
+    startService();
+  }, []);
 
   const onClick = async () => {
     if (!ref.current) {
@@ -18,32 +18,32 @@ const useInitialService = () => {
     }
 
     const result = await ref.current.build({
-      entryPoints: ['index.js'],
+      entryPoints: ["index.js"],
       bundle: true,
       write: false,
-      plugins: [unpkgPathPlugin()],
+      plugins: [unpkgPathPlugin(), fetchPlugin(input)],
       define: {
-        'process.env.NODE_ENV': '"production"',
-        global: 'window'
-      }
-    })
+        "process.env.NODE_ENV": '"production"',
+        global: "window",
+      },
+    });
 
-    setCode(result.outputFiles[0].text)
-  }
+    setCode(result.outputFiles[0].text);
+  };
 
   const startService = async () => {
     ref.current = await esbuild.startService({
       worker: true,
-      wasmURL: '/esbuild.wasm'
-    })
-  }
+      wasmURL: "/esbuild.wasm",
+    });
+  };
 
   return {
     code,
     input,
     onClick,
     setInput,
-  }
-}
+  };
+};
 
 export default useInitialService;
